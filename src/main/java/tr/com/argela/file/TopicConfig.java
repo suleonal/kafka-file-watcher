@@ -12,12 +12,12 @@ public class TopicConfig {
     @Autowired
     KafkaConfig config;
 
-    @Bean
+    /*@Bean
     public NewTopic topic1() {
         return TopicBuilder.name(config.getTopicName())
                 .partitions(config.getPartitionSize())
                 .replicas(1)
                 .build();
-    }
+    }*/
 
 }

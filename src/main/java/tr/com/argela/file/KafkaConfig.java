@@ -20,12 +20,6 @@ public class KafkaConfig {
     @Value("${kafka.url}")
     String bootstrapAddress;
 
-    @Value("${kafka.partition.size}")
-    int partitionSize;
-
-    @Value("${kafka.topic}")
-    String topicName;
-
     @Value("${kafka.group}")
     String groupName;
 
@@ -33,16 +27,8 @@ public class KafkaConfig {
         return bootstrapAddress;
     }
 
-    public String getTopicName() {
-        return topicName;
-    }
-
     public String getGroupName() {
         return groupName;
-    }
-
-    public int getPartitionSize() {
-        return partitionSize;
     }
 
     @Bean

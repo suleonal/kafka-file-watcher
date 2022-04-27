@@ -1,7 +1,6 @@
 package tr.com.argela.file;
 
 import java.io.File;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,14 +26,22 @@ public class service1 {
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
 
+    public service1(){
+        initService();
+    }
+
+    private void initService() {
+        Thread thread = new Thread(run);
+        thread.start();
+    }
+
     public void onNewFile(String filePath) {
+       logger.info("[service1][onNewFile] "+ filePath);
         ListenableFuture<SendResult<String, String>> future = this.kafkaTemplate.send(topicName, filePath);
 
         future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
             @Override
             public void onSuccess(SendResult<String, String> result) {
-                logger.info("Sent file path: " + filePath
-                        + " with offset: " + result.getRecordMetadata().offset());
             }
 
             @Override
@@ -43,20 +50,26 @@ public class service1 {
             }
         });
     }
-
-    /*public class Thread implements Runnable{
-    
-        @Override
+//dene
+    Runnable run = new Runnable() {
         public void run() {
-            try {
-                File f = new File(filePath);
-                if(f.list().length>0){
+            String listenFolder= "/sule/incoming";
 
+            while (true) {
+                
+                File f = new File(listenFolder);
+                String[] files = f.list();
+                System.out.println("[service1][watchDir] "+files.length);
+                for (String fileName : files) {
+                    onNewFile(listenFolder+File.separator+fileName);
                 }
-            } catch (InterruptedException ex) {
-                System.err.println(ex);
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                }
             }
         }
-    }*/
+    };
+ 
 
 }

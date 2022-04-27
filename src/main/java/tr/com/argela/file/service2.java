@@ -1,5 +1,13 @@
 package tr.com.argela.file;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +22,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 @Service
 public class service2 {
 
-    private static final Logger logger = LoggerFactory.getLogger(service1.class);
+    private static final Logger logger = LoggerFactory.getLogger(service2.class);
 
     @Value("${file.path}")
     String filePath;
@@ -25,14 +33,14 @@ public class service2 {
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
 
-    public void onFileProcossed(String filePath) {
+    public void onFileProcessed(String filePath) {
+        logger.info("[Service2][onFileProcessed]" + filePath);
         ListenableFuture<SendResult<String, String>> future = this.kafkaTemplate.send(topicName, filePath);
 
         future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
             @Override
             public void onSuccess(SendResult<String, String> result) {
-                logger.info("Sent file path: " + filePath
-                        + " with offset: " + result.getRecordMetadata().offset());
+
             }
 
             @Override
@@ -44,11 +52,23 @@ public class service2 {
 
     @KafkaListener(topics = "${kafka.topic1}", groupId = "${kafka.group}")
     public void onNewFile(String filePath) {
-        logger.info("New file path: " + filePath);
+        logger.info("[Service2][NewFile]" + filePath);
         move(filePath);
     }
 
     public void move(String filePath) {
-        onFileProcossed(filePath);
+
+        File newFile = new File(filePath);
+        File destFolder = new File("/sule/processing");
+        File destFile = new File(destFolder.getPath() + File.separator + newFile.getName());
+        try {
+            Files.move(Paths.get(newFile.getPath()), Paths.get(destFile.getPath()),
+                    StandardCopyOption.REPLACE_EXISTING);
+            onFileProcessed(destFile.getPath());
+        } catch (IOException e) {
+            logger.error("[Service2][move][Failed]" + newFile + " to " + destFile + ", msg:" + e.getMessage());
+        }
+
     }
+
 }

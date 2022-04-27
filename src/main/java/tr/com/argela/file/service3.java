@@ -1,5 +1,12 @@
 package tr.com.argela.file;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +21,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 @Service
 public class service3 {
 
-    private static final Logger logger = LoggerFactory.getLogger(service1.class);
+    private static final Logger logger = LoggerFactory.getLogger(service3.class);
 
     @Value("${file.path}")
     String filePath;
@@ -31,8 +38,7 @@ public class service3 {
         future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
             @Override
             public void onSuccess(SendResult<String, String> result) {
-                logger.info("Sent file path: " + filePath
-                        + " with offset: " + result.getRecordMetadata().offset());
+                logger.info("[Service3][onFileComplete] " + filePath);
             }
 
             @Override
@@ -43,12 +49,23 @@ public class service3 {
     }
 
     @KafkaListener(topics = "${kafka.topic2}", groupId = "${kafka.group}")
-    public void onFileProcossed(String filePath) {
-        logger.info("New file path: " + filePath);
+    public void onFileProcessed(String filePath) {
+        logger.info("[Service3][onFileProcessed] " + filePath);
         appendtoFile(filePath);
     }
 
     public void appendtoFile(String filePath) {
+
+        File newFile = new File(filePath);
+        File destFolder = new File("/sule/complete");
+        File destFile = new File(destFolder.getPath() + File.separator + newFile.getName());
+        try {
+            Files.move(Paths.get(newFile.getPath()), Paths.get(destFile.getPath()),
+                    StandardCopyOption.REPLACE_EXISTING);
+            onFileProcessed(destFile.getPath());
+        } catch (IOException e) {
+            logger.error("[Service3][move][Failed]" + newFile + " to " + destFile + ", msg:" + e.getMessage());
+        }
         onFileComplete(filePath);
     }
 }

@@ -9,14 +9,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class service4 {
 
-    private static final Logger logger = LoggerFactory.getLogger(service1.class);
+    private static final Logger logger = LoggerFactory.getLogger(service4.class);
 
     @Value("${file.path}")
     String filePath;
 
     @KafkaListener(topics = "${kafka.topic3}", groupId = "${kafka.group}")
-    public void onFileProcossed(String filePath) {
-        logger.info("New file path: " + filePath);
+    public void onFileCompleted(String filePath) {
+        logger.info("[Service4][onFileProcessed] " + filePath);
     }
 
 }
