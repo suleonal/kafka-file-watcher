@@ -15,7 +15,7 @@ public class TopicConfig {
     /*@Bean
     public NewTopic topic1() {
         return TopicBuilder.name(config.getTopicName())
-                .partitions(config.getPartitionSize())
+                .partitions()
                 .replicas(1)
                 .build();
     }*/

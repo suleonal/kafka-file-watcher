@@ -1,7 +1,10 @@
 package tr.com.argela.file;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,12 +63,18 @@ public class service3 {
         File destFolder = new File("/sule/complete");
         File destFile = new File(destFolder.getPath() + File.separator + newFile.getName());
         try {
+            String c = "hello";
+            FileWriter yazici = new FileWriter(filePath, true);
+            BufferedWriter yaz = new BufferedWriter(yazici);
+            /*PrintWriter out = new PrintWriter(yaz);
+            out.println("hello");*/
+            yaz.write(c);
+            yaz.close();
             Files.move(Paths.get(newFile.getPath()), Paths.get(destFile.getPath()),
                     StandardCopyOption.REPLACE_EXISTING);
             onFileProcessed(destFile.getPath());
         } catch (IOException e) {
             logger.error("[Service3][move][Failed]" + newFile + " to " + destFile + ", msg:" + e.getMessage());
         }
-        onFileComplete(filePath);
     }
 }
