@@ -52,29 +52,32 @@ public class service3 {
     }
 
     @KafkaListener(topics = "${kafka.topic2}", groupId = "${kafka.group}")
-    public void onFileProcessed(String filePath) {
+    public void onFileProcessed(String filePath) throws IOException {
         logger.info("[Service3][onFileProcessed] " + filePath);
         appendtoFile(filePath);
     }
 
-    public void appendtoFile(String filePath) {
+    public void appendtoFile(String filePath) throws IOException {
 
         File newFile = new File(filePath);
         File destFolder = new File("/sule/complete");
         File destFile = new File(destFolder.getPath() + File.separator + newFile.getName());
+
         try {
             String c = "hello";
-            FileWriter yazici = new FileWriter(filePath, true);
+            FileWriter yazici = new FileWriter(filePath);
             BufferedWriter yaz = new BufferedWriter(yazici);
-            /*PrintWriter out = new PrintWriter(yaz);
-            out.println("hello");*/
             yaz.write(c);
+            yaz.flush();
             yaz.close();
             Files.move(Paths.get(newFile.getPath()), Paths.get(destFile.getPath()),
                     StandardCopyOption.REPLACE_EXISTING);
+
             onFileProcessed(destFile.getPath());
+
         } catch (IOException e) {
             logger.error("[Service3][move][Failed]" + newFile + " to " + destFile + ", msg:" + e.getMessage());
         }
+
     }
 }
